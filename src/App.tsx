@@ -1,19 +1,17 @@
-const examples = [
-  { slug: '01-use-state', href: '/src/examples/01-use-state/' },
-  { slug: '02-use-effect', href: '/src/examples/02-use-effect/' },
-]
+import { pages } from 'virtual:mpa-pages'
 
 export default function App() {
   return (
-    <div>
-      <h1>react-playground</h1>
+    <main>
+      <h1>React Playground</h1>
+      
       <ul>
-        {examples.map(({ slug, href }) => (
-          <li key={slug}>
-            <a href={href}>{slug}</a>
+        {pages.map(p => (
+          <li key={p.name}>
+            <a href={p.path}>{p.name}</a>
           </li>
         ))}
       </ul>
-    </div>
+    </main>
   )
 }
