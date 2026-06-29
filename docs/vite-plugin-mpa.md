@@ -8,25 +8,29 @@ decisions behind it, and what we actually shipped.
 ## What it does
 
 A small custom Vite plugin for this React + TypeScript playground. Each folder
-under `src/examples/` is a self-contained example. The plugin **auto-discovers**
-those folders and serves each as its own page, plus a **main page** at `/` that
-lists them all.
+under a **collection dir** (`src/examples/`, `src/projects/`) is a self-contained
+example. The plugin **auto-discovers** those folders and serves each as its own
+page, plus a **main page** at `/` that lists them all, grouped by collection.
 
 Adding an example = creating a folder with a `main.tsx` — nothing else:
 
 ```
-src/examples/
+src/examples/        ← collection: atomic concept demos (cheatsheet)
   03-use-ref/
-    main.tsx     ← the only requirement
+    main.tsx         ← the only requirement
     App.tsx
     hooks/
+src/projects/        ← collection: apps integrating several concepts
+  01-tic-tac-toe/
+    main.tsx
+    App.tsx
 ```
 
-It then shows up on its own URL (`/examples/03-use-ref`) and in the index at `/`.
-No config to touch, no HTML file per folder.
+It then shows up on its own URL (`/examples/03-use-ref`) and in the index at `/`,
+under its collection's heading. No config to touch, no HTML file per folder.
 
-**Done-when:** adding `src/examples/NN-name/main.tsx` makes it appear at
-`/examples/NN-name` and on `/`, with no config edits and no per-folder HTML. ✅
+**Done-when:** adding `src/<collection>/NN-name/main.tsx` makes it appear at
+`/<collection>/NN-name` and on `/`, with no config edits and no per-folder HTML. ✅
 
 ## Why
 
@@ -34,7 +38,7 @@ A learning playground. The goal is **zero friction**: write an example and
 immediately run and see it, with no per-folder boilerplate and no config edits.
 Each example stays isolated (its own entry, its own page) so they never interfere.
 
-Existing MPA plugins each solve only part of this, so we built a ~220-line one
+Existing MPA plugins each solve only part of this, so we built a ~250-line one
 (no extra deps) tailored to exactly this need.
 
 ---
@@ -47,13 +51,30 @@ We read each project's actual source (not just the README) before deciding.
 |---|---|---|---|
 | **IndexXuan/vite-plugin-mpa** | ✅ glob `main.*` | 🔴 physical `index.html` per folder (hand-written `<script>`) | Right idea, but **dead** (Vite 2, frozen ~3y), `mpa is not a function` on Vite 5+, and demands an HTML file per folder. |
 | **@sunday-sky (moonlitusun)** | ❌ none (manual `pages` map) | virtual (string-replace) | Good virtual-HTML model, but no discovery + foot-guns: uninvalidated dev cache, `NODE_ENV` gate, double `<title>`, no Vite 7/8. |
-| **emosheeep/vite-plugin-virtual-mpa** | ✅ `scanOptions` (subfolders) | virtual (EJS) | The cleanest fit and best-maintained — but EJS is dead weight, scan is 1-level, and it's an unmaintained dep for what is ~70 lines we already understand. |
+| **emosheeep/vite-plugin-virtual-mpa** | ✅ `scanOptions` (subfolders); `scanDirs: string \| string[]` | virtual (EJS) | The cleanest fit and best-maintained — but EJS is dead weight, scan is 1-level, multi-dir is **flat** (see below), and it's an unmaintained dep for what is ~70 lines we already understand. |
 
 **No single plugin gives all four together** — auto-discovery **and** virtual HTML
 **and** zero-per-folder-config **and** Vite 8 / Rolldown support. So we built our
 own, borrowing the good patterns: glob/`readdirSync` discovery (IndexXuan),
 shared-template + script/title injection (@sunday-sky), and the
 `resolveId`+`load` virtual-HTML approach with clean URLs (emosheeep).
+
+### Multiple folders — none model "collections"
+
+Only **emosheeep** accepts more than one source dir (`scanOptions.scanDirs:
+string | string[]`); **IndexXuan** is single-dir (`scanDir: string`) and
+**@sunday-sky** has no discovery (manual `pages` map — entries can point anywhere,
+but there's no folder scanning). But emosheeep's multi-dir is **flat**: every
+subdirectory across all `scanDirs` is merged into one page list keyed by folder
+name — names must be **globally unique** ("page with name existed will be
+ignored"), with no per-dir URL prefix or grouping.
+
+Our `dirs: string[]` instead treats each dir as a **collection**: its basename
+becomes both a URL prefix (`/examples/*`, `/projects/*`) and a grouping key. So
+names can repeat across collections, the index groups by collection, build input
+keys are namespaced (`examples/01`, `projects/01`), and prev/next navigation stays
+within one collection. None of the evaluated plugins model this — emosheeep's flat
+merge is effectively the `flatten` behavior we rejected.
 
 ---
 
@@ -67,7 +88,7 @@ import mpaPlugin from './vite-plugin-mpa'
 
 export default defineConfig({
   plugins: [
-    mpaPlugin({ dir: 'src/examples', entry: 'main.tsx' }),
+    mpaPlugin({ dirs: ['src/examples', 'src/projects'], entry: 'main.tsx' }),
     react(), // after mpa() so its preamble runs inside transformIndexHtml
   ],
 })
@@ -78,9 +99,8 @@ export default defineConfig({
 | Option | Required | Default | Purpose |
 |---|---|---|---|
 | `entry` | **yes** | — | Per-folder entry file. Framework-specific (`main.tsx` React / `main.ts` Vue), so no default would be safe. |
-| `dir` | no | `'src/pages'` | Folder to scan; each subfolder with `entry` becomes a page. |
+| `dirs` | no | `['src/pages']` | Collection dirs to scan; each subfolder with `entry` becomes a page. Each dir's basename is its collection name + URL prefix (`/examples/*`). |
 | `template` | no | `'template.html'` | Shared HTML shell for the generated pages. |
-| `flatten` | no | `false` | Drop the dir prefix from URLs/output: `/examples/x.html` → `/x.html`. |
 
 The `template.html` shell uses two placeholders, replaced verbatim:
 
@@ -94,19 +114,20 @@ __ENTRY__
 - `__TITLE__` → `"<main page title> | <name>"` (e.g. `React Playground | 01-use-state`).
 - `__ENTRY__` → external `<script type="module" src="...">` (must be external — see constraint #3).
 
-The `virtual:mpa-pages` module exposes the discovered pages so the main page can
-render its own index in React:
+The `virtual:mpa-pages` module exposes the discovered pages — grouped by
+collection, mirroring the source dirs — so the main page can render its own index
+in React:
 
 ```ts
-// virtual:mpa-pages → { name: string; path: string }[]
-import { pages } from 'virtual:mpa-pages'
+// virtual:mpa-pages → { name: string; pages: { name: string; path: string }[] }[]
+import { collections } from 'virtual:mpa-pages'
 ```
 
 ---
 
 ## Architecture decisions
 
-1. **Build our own** (~220 lines, `readdirSync` not glob, no deps). No existing
+1. **Build our own** (~250 lines, `readdirSync` not glob, no deps). No existing
    plugin covers discovery + virtual HTML + zero-per-folder-config + Vite 8.
 2. **Physical main page + `appType: 'mpa'`.** The root `index.html` is a real
    React app Vite serves natively; only the **examples** are virtual HTML. Chosen
@@ -122,10 +143,12 @@ import { pages } from 'virtual:mpa-pages'
    single-sourced from the main page; falls back to bare `<name>`. Always
    **replace** the placeholder, never insert a second `<title>`.
 5. **`virtual:mpa-pages`** decouples the index UI from the URL scheme; full React
-   control, still zero-config.
-6. **URLs `/<prefix>/<name>`** (`prefix = basename(dir)`), or `/<name>` when
-   `flatten`. Extensionless is canonical; `.html` and trailing slash are aliases.
-   Same URL in dev and build. Output: `dist/<prefix>/<name>.html`.
+   control, still zero-config. Exported **nested** (`collections -> pages`),
+   mirroring the plugin's internal model, so consumers don't regroup a flat list.
+6. **URLs `/<collection>/<name>`** (`collection = basename(dir)`). Extensionless
+   is canonical; `.html` and trailing slash are aliases. Same URL in dev and
+   build. Output: `dist/<collection>/<name>.html`. Build input keys are namespaced
+   by collection (`examples/01`) so page names can repeat across collections.
 7. **Unknown route → main page** (dev middleware rewrites `req.url = '/'`). The
    main page, which lists everything, doubles as the not-found page.
 8. **Branch dev/build via Vite hooks** (`config`/`configResolved`/`configureServer`),
@@ -151,11 +174,12 @@ import { pages } from 'virtual:mpa-pages'
 
 The plugin uses these hooks:
 
-- **`config`** — `discover()` subfolders with `entry`; register MPA inputs
-  (`{ index: 'index.html' }` + one virtual `<prefix>/<name>.html` per page); set
+- **`config`** — `discover()` subfolders with `entry` across every collection;
+  register MPA inputs (`{ index: 'index.html' }` + one virtual
+  `<collection>/<name>.html` per page, keys namespaced by collection); set
   `appType: 'mpa'`.
 - **`configResolved`** — cache root, read template + main-page `<title>` prefix,
-  build the abs-path → name map.
+  build the collections + abs-path → page map.
 - **`resolveId` / `load`** (object form with `filter: { id }`) — claim the
   `virtual:mpa-pages` module and each page's `.html`; `load` returns the pages
   list or the rendered HTML.
@@ -172,7 +196,7 @@ Beyond the base plan, we added:
   `template.html` / `index.html` re-reads the cached template + title and
   reloads — no stale dev cache.
 - **`normalizePath` everywhere** — all path/id comparisons are POSIX-normalized
-  so the file→name map and the watcher match the same way on Windows.
+  so the file→page map and the watcher match the same way on Windows.
 - **Hook filters** (`resolveId`/`load`) — narrow which ids reach the handlers to
   cut JS↔Rust overhead; in-handler guards stay for correctness.
 - **Vite's `send()`** — serve the dev HTML with proper `Content-Type` + ETag/304/
@@ -186,17 +210,19 @@ inline entry scripts; no second `<title>`; no uninvalidated dev cache; no stray
 
 ### Out of scope (v1)
 
-Recursive/nested discovery; EJS, minify, per-page SPA sub-routes; a `title`
-option or "prettified" titles; rendering each example's `README.md` on the index.
+Recursive/nested discovery **within** a collection (each is scanned 1 level deep);
+EJS, minify, per-page SPA sub-routes; a `title` option or "prettified" titles;
+rendering each example's `README.md` on the index.
 
 ---
 
 ## Verification
 
-- **Dev**: `/` lists examples; `/examples/<name>` mounts with Fast Refresh; `.html`
-  and trailing-slash aliases work; unknown route → main page; adding/removing a
-  folder hot-reloads; editing `template.html` / the title hot-reloads — all
-  without a restart.
+- **Dev**: `/` lists pages grouped by collection; `/<collection>/<name>` (e.g.
+  `/examples/01-use-state`, `/projects/01-tic-tac-toe`) mounts with Fast Refresh;
+  `.html` and trailing-slash aliases work; unknown route → main page;
+  adding/removing a folder in any collection hot-reloads; editing `template.html` /
+  the title hot-reloads — all without a restart.
 - **Build** (`tsc --noEmit && vite build`): emits `dist/index.html` +
-  `dist/examples/<name>.html`, each with a hashed external `<script>` and a single
-  `<title>`. `tsc`, `oxlint` pass.
+  `dist/<collection>/<name>.html` (`dist/examples/*.html`, `dist/projects/*.html`),
+  each with a hashed external `<script>` and a single `<title>`. `tsc`, `oxlint` pass.

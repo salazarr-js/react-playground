@@ -1,4 +1,4 @@
 /// <reference types="vite/client" />
 declare module 'virtual:mpa-pages' {
-  export const pages: { name: string; path: string }[]
+  export const collections: { name: string; pages: { name: string; path: string }[] }[]
 }

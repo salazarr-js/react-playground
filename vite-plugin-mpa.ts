@@ -5,9 +5,8 @@ import { join, resolve, basename } from 'node:path'
 
 interface Options {
   entry: string // required — per-folder entry file, e.g. 'main.tsx' (React) or 'main.ts' (Vue)
-  dir?: string // default 'src/pages'
+  dirs?: string[] // default ['src/pages'] — one collection per dir; basename becomes the collection name/URL prefix
   template?: string // default 'template.html'
-  flatten?: boolean // default false — drop the dir prefix: /examples/asd.html → /asd.html
 }
 
 const VIRTUAL_ID = 'virtual:mpa-pages'
@@ -20,6 +19,15 @@ const ID_FILTER = /virtual:mpa-pages$|\.html$/
 
 /** Resolve to an absolute path normalized to POSIX, so id comparisons match on Windows. */
 const norm = (...segments: string[]) => normalizePath(resolve(...segments))
+
+/** One discovered collection: its source dir, name, URL/file prefixes, and pages. */
+interface Collection {
+  dir: string // 'src/examples'
+  name: string // 'examples' — basename(dir); used as collection name and URL prefix
+  urlBase: string // '/examples'
+  filePrefix: string // 'examples/'
+  names: string[] // page folder names, sorted
+}
 
 /**
  * Each direct subfolder of `dir` that contains `entry` becomes a page.
@@ -53,34 +61,44 @@ function renderExample(
 }
 
 /**
- * Turns each subfolder of `dir` that has an `entry` file into its own page,
- * served from one shared `template.html` (no per-folder HTML). The main
- * `index.html` stays physical (Vite serves it); only the discovered pages are
- * virtual HTML synthesized here. Also exposes a `virtual:mpa-pages` module so
- * the main page can render its own index of the discovered pages.
+ * Turns each subfolder of every `dir` that has an `entry` file into its own page,
+ * served from one shared `template.html` (no per-folder HTML). Each dir is a
+ * "collection" (its basename, e.g. `examples`/`projects`) that becomes the URL
+ * prefix, so pages live at `/examples/01` and `/projects/01` and never collide.
+ * The main `index.html` stays physical (Vite serves it); only the discovered
+ * pages are virtual HTML synthesized here. Also exposes a `virtual:mpa-pages`
+ * module — `{ name, pages: { name, path }[] }[]` — so the main page can render a
+ * grouped index and pages can build prev/next navigation within their collection.
  *
  * @param opts - see {@link Options}; `entry` is required, the rest are optional.
  * @returns the Vite plugin.
  */
 export default function mpa(opts: Options): Plugin {
   const { entry } = opts
-  const dir = opts.dir ?? 'src/pages'
+  const dirs = opts.dirs ?? ['src/pages']
   const templatePath = opts.template ?? 'template.html'
-  const flatten = opts.flatten ?? false
-  const prefix = basename(dir) // 'src/examples' → 'examples'
-
-  // The shared URL/output segment for pages. When flattened it's empty, so
-  // pages live at the root (/asd.html, dist/asd.html) instead of under /examples.
-  const urlBase = flatten ? '' : `/${prefix}` // '/examples' | ''
-  const filePrefix = flatten ? '' : `${prefix}/` // 'examples/' | ''
 
   // Populated across hooks (config → configResolved), then read in load/serve.
   // Paths are normalized to POSIX so id comparisons work the same on Windows.
   let root = process.cwd()
-  let names: string[] = []
+  let collections: Collection[] = []
   let template = ''
   let sitePrefix = '' // main page <title>, prefixed onto example titles
-  const fileToName = new Map<string, string>() // abs '.../examples/01.html' → '01'
+  const fileToPage = new Map<string, { name: string; dir: string }>() // abs '.../examples/01.html' → page
+
+  /** (Re)discover every collection's pages against the current `root`. */
+  const buildCollections = () => {
+    collections = dirs.map(dir => {
+      const name = basename(dir) // 'src/examples' → 'examples'
+      return {
+        dir,
+        name,
+        urlBase: `/${name}`,
+        filePrefix: `${name}/`,
+        names: discover(root, dir, entry),
+      }
+    })
+  }
 
   /** (Re)read the shared template and the main page's <title> prefix. */
   const readTemplates = () => {
@@ -89,35 +107,43 @@ export default function mpa(opts: Options): Plugin {
     sitePrefix = mainHtml.match(/<title>([^<]*)<\/title>/)?.[1].trim() ?? ''
   }
 
-  /** Rebuild the absolute-path → page-name map from the current `names`. */
+  /** Rebuild the absolute-path → page map from the current collections. */
   const mapFiles = () => {
-    fileToName.clear()
-    for (const n of names) fileToName.set(norm(root, `${filePrefix}${n}${SUFFIX}`), n)
+    fileToPage.clear()
+    for (const c of collections)
+      for (const n of c.names)
+        fileToPage.set(norm(root, `${c.filePrefix}${n}${SUFFIX}`), { name: n, dir: c.dir })
   }
+
+  /** Stable signature of the current page set, to detect add/remove during dev. */
+  const signature = () => collections.map(c => `${c.name}:${c.names.join('|')}`).join('~')
 
   return {
     name: 'vite-plugin-mpa',
 
     /**
      * Discover pages and register them as MPA build inputs: the physical main
-     * page plus one virtual `<prefix>/<name>.html` per page. `appType: 'mpa'` makes
-     * Vite serve on-disk HTML and not fall back to index.html on unknown routes.
+     * page plus one virtual `<collection>/<name>.html` per page. `appType: 'mpa'`
+     * makes Vite serve on-disk HTML and not fall back to index.html on unknown
+     * routes. Input keys are namespaced by collection so names can't collide.
      */
     config() {
       root = process.cwd()
-      names = discover(root, dir, entry)
+      buildCollections()
       const input: Record<string, string> = { index: MAIN }
-      for (const n of names) input[n] = `${filePrefix}${n}${SUFFIX}`
+      for (const c of collections)
+        for (const n of c.names) input[`${c.name}/${n}`] = `${c.filePrefix}${n}${SUFFIX}`
       return { appType: 'mpa', build: { rolldownOptions: { input } } }
     },
 
     /**
      * Cache the resolved root, read the template + main page title, and build the
-     * file→name map. These are refreshed on demand by the dev watcher below.
+     * collections + file→page map. These are refreshed on demand by the dev watcher.
      */
     configResolved(c) {
       root = c.root
       readTemplates()
+      buildCollections()
       mapFiles()
     },
 
@@ -132,7 +158,7 @@ export default function mpa(opts: Options): Plugin {
         if (id === VIRTUAL_ID) return RESOLVED_VIRTUAL_ID
         if (id.endsWith(SUFFIX)) {
           const abs = norm(root, id) // id arrives as 'examples/01.html'
-          if (fileToName.has(abs)) return abs
+          if (fileToPage.has(abs)) return abs
         }
         return null
       },
@@ -147,11 +173,14 @@ export default function mpa(opts: Options): Plugin {
       filter: { id: ID_FILTER },
       handler(id) {
         if (id === RESOLVED_VIRTUAL_ID) {
-          const pages = names.map(n => ({ name: n, path: `${urlBase}/${n}` }))
-          return `export const pages = ${JSON.stringify(pages)}`
+          const out = collections.map(c => ({
+            name: c.name,
+            pages: c.names.map(n => ({ name: n, path: `${c.urlBase}/${n}` })),
+          }))
+          return `export const collections = ${JSON.stringify(out)}`
         }
-        const name = fileToName.get(id)
-        if (name) return renderExample(template, name, dir, entry, sitePrefix)
+        const page = fileToPage.get(id)
+        if (page) return renderExample(template, page.name, page.dir, entry, sitePrefix)
         return null
       },
     },
@@ -163,7 +192,6 @@ export default function mpa(opts: Options): Plugin {
      * Refresh). Anything we don't handle is passed to Vite via next().
      */
     configureServer(server) {
-      const base = norm(root, dir)
       const templateAbs = norm(root, templatePath)
       const mainAbs = norm(root, MAIN)
 
@@ -172,15 +200,16 @@ export default function mpa(opts: Options): Plugin {
         if (mod) server.moduleGraph.invalidateModule(mod) // main page re-imports the new list
       }
 
-      // A page folder/entry was added or removed → re-discover; if the set
-      // changed, refresh the map, invalidate the pages module, and reload.
-      // (handleHotUpdate would miss this — it only fires for files already in
-      // the module graph, not brand-new folders.)
+      // A page folder/entry was added or removed under any collection → re-discover;
+      // if the set changed, refresh the map, invalidate the pages module, and
+      // reload. (handleHotUpdate would miss this — it only fires for files already
+      // in the module graph, not brand-new folders.)
       const onPagesChanged = (file: string) => {
-        if (!norm(file).startsWith(base + '/')) return
-        const before = names.join('|')
-        names = discover(root, dir, entry)
-        if (names.join('|') === before) return // entry set unchanged → nothing to do
+        const f = norm(file)
+        if (!collections.some(c => f.startsWith(norm(root, c.dir) + '/'))) return
+        const before = signature()
+        buildCollections()
+        if (signature() === before) return // entry set unchanged → nothing to do
         mapFiles()
         invalidatePages()
         server.hot.send({ type: 'full-reload' })
@@ -198,22 +227,24 @@ export default function mpa(opts: Options): Plugin {
         server.hot.send({ type: 'full-reload' })
       })
 
-      const re = new RegExp(`^${urlBase}/(.+?)(?:\\.html)?/?$`) // /examples/01 | .html | trailing slash (or /01 when flattened)
+      const re = /^\/([^/]+)\/(.+?)(?:\.html)?\/?$/ // /<collection>/<name>[.html][/]
       server.middlewares.use(async (req, res, next) => {
         // Only intercept HTML page navigations; let assets/JS/etc. fall through.
         if (req.method !== 'GET' || !req.headers.accept?.includes('text/html')) return next()
         const url = (req.url ?? '/').split('?')[0]
         if (url === '/') return next() // main page is physical → Vite serves it
 
-        // Unknown route → rewrite to the main page (it lists everything, so it
-        // doubles as the not-found page).
-        const name = url.match(re)?.[1]
-        if (!name || !names.includes(name)) {
+        // Resolve <collection>/<name>; unknown route → rewrite to the main page (it
+        // lists everything, so it doubles as the not-found page).
+        const m = url.match(re)
+        const collection = m && collections.find(c => c.name === m[1])
+        const name = m?.[2]
+        if (!collection || !name || !collection.names.includes(name)) {
           req.url = '/'
           return next()
         }
 
-        const html = renderExample(template, name, dir, entry, sitePrefix)
+        const html = renderExample(template, name, collection.dir, entry, sitePrefix)
         const out = await server.transformIndexHtml(url, html, req.originalUrl)
         send(req, res, out, 'html', { headers: server.config.server.headers }) // adds etag/304/cache like Vite's own HTML middleware
       })
