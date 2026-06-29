@@ -107,6 +107,14 @@ Arquitectura elegida: **single Vite project + MPA** con plugin propio.
 
 ---
 
+## Vite native: `appType: 'mpa'`
+
+Vite has a built-in [`appType`](https://vite.dev/config/shared-options#apptype) option (`'spa'` | `'mpa'` | `'custom'`).
+
+Setting `appType: 'mpa'` disables the SPA history fallback — unknown URLs return 404 instead of serving the root `index.html`. This is a necessary config for any MPA setup, but it does nothing on its own: no discovery, no virtual HTML, no landing page. The plugin must set it in the `config` hook.
+
+---
+
 ## Conclusión
 
 Ninguno hace exactamente lo que necesitamos:
@@ -117,3 +125,10 @@ Ninguno hace exactamente lo que necesitamos:
 
 La solución: combinar lo mejor de los tres en un plugin propio de ~70 líneas.
 Ver `docs/plugin-brief.md`.
+
+---
+
+## References to dig into
+
+- [Rolldown full docs (LLM-friendly)](https://rolldown.rs/llms-full.txt) — Rolldown API, plugin hooks, input/output options. Relevant for understanding what changed from Rollup and what the plugin can rely on.
+- [Vite full docs (LLM-friendly)](https://vite.dev/llms-full.txt) — Complete Vite reference. Useful for plugin hook signatures, `configureServer`, `resolveId`/`load` virtual module patterns, and `appType` behavior.

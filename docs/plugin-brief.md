@@ -58,7 +58,9 @@ react-playground/
 
 Escanea `src/examples/*/main.tsx` con glob al arrancar.
 
-Construye `rollupOptions.input` automáticamente:
+Sets `appType: 'mpa'` to disable Vite's SPA fallback (otherwise all unknown URLs serve root `index.html`).
+
+Builds `rolldownOptions.input` automatically (Vite 8 uses Rolldown, not Rollup):
 ```ts
 {
   '01-use-state': '/abs/path/src/examples/01-use-state/main.tsx',
