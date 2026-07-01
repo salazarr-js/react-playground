@@ -16,7 +16,7 @@ export default function App() {
       <h1>useEffect</h1>
       <p>The tab title reflects the current value.</p>
       <p>Count: {count}</p>
-      <button onClick={() => setCount(count + 1)}>+1</button>
+      <button type="button" onClick={() => setCount(c => c + 1)}>+1</button>
     </div>
   )
 }

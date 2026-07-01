@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+## Language: English only
+
+**All committed content is written in English** — code, identifiers, comments, README files, `docs/`, commit messages, and any other artifact in the repo. This holds regardless of the language used in the prompt or chat: even if the conversation is in Spanish (or any other language), everything written to a file must be in English. Chat replies can match the user's language; repository content cannot.
+
 ## What this is
 
 A personal React 19 + TypeScript playground. Each demo lives in its own folder under a **collection** and is served as an independent page by a custom Vite MPA plugin. There is no router and no shared app shell — every page is a standalone `main.tsx` entry that mounts its own React root.

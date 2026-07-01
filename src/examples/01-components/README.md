@@ -32,7 +32,7 @@ function Button({ onClick, children }: ButtonProps) {
 The prop that receives the click is named **`onClick`** (`on` + event); the handler passed from the parent is an arrow function. Convention: props are `onSomething`, handler functions are `handleSomething`.
 
 ```tsx
-<Button onClick={() => setCount((count) => count + 1)}>…</Button>
+<Button onClick={() => setCount((prev) => prev + 1)}>…</Button>
 ```
 
 ### 4. JavaScript in JSX with curly braces

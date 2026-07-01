@@ -21,7 +21,7 @@ Legend: ✅ done · 🟡 partially touched · ⬜ not yet
 | ⬜ | Writing Markup with JSX | |
 | 🟡 | JavaScript in JSX with Curly Braces | `01-components` (`{count}` embedding; no attrs/`{{}}`) |
 | ✅ | Passing Props to a Component | `01-components` (`onClick` + `children`) |
-| 🟡 | Conditional Rendering | `03-custom-hook` (touched: `&&`, early return) |
+| 🟡 | Conditional Rendering | `04-custom-hook` (touched: `&&`, early return) |
 | ⬜ | Rendering Lists (keys) | |
 | ⬜ | Keeping Components Pure | |
 | ⬜ | Your UI as a Tree | |
@@ -30,10 +30,10 @@ Legend: ✅ done · 🟡 partially touched · ⬜ not yet
 | St | Docs page | Example folder |
 |----|-----------|----------------|
 | 🟡 | Responding to Events | `01-components` (handler prop + `on`/`handle` naming; no event object/propagation) |
-| ✅ | State: A Component's Memory | `01-components` (counter + functional update) |
+| ✅ | State: A Component's Memory | `02-use-state` (dedicated counter); also `01-components` |
 | ⬜ | Render and Commit | |
-| ⬜ | State as a Snapshot | |
-| ⬜ | Queueing a Series of State Updates | |
+| 🟡 | State as a Snapshot | `02-use-state` (snapshot/batching explained; no interactive demo) |
+| 🟡 | Queueing a Series of State Updates | `02-use-state` (updater `prev =>` + batching explained; no multi-update demo) |
 | ⬜ | Updating Objects in State | |
 | ⬜ | Updating Arrays in State | |
 
@@ -53,12 +53,12 @@ Legend: ✅ done · 🟡 partially touched · ⬜ not yet
 |----|-----------|----------------|
 | ⬜ | Referencing Values with Refs (useRef) | |
 | ⬜ | Manipulating the DOM with Refs | |
-| ✅ | Synchronizing with Effects (useEffect) | `02-use-effect` |
-| 🟡 | You Might Not Need an Effect | `03-custom-hook` (discussed; no dedicated demo) |
+| ✅ | Synchronizing with Effects (useEffect) | `03-use-effect` (setup/cleanup/deps) + `04-custom-hook` (fetch race guard) |
+| 🟡 | You Might Not Need an Effect | `04-custom-hook` (fetch-is-valid guidance; no anti-pattern demo) |
 | ⬜ | Lifecycle of Reactive Effects | |
 | ⬜ | Separating Events from Effects (useEffectEvent) | |
 | ⬜ | Removing Effect Dependencies | |
-| ✅ | Reusing Logic with Custom Hooks | `03-custom-hook` |
+| ✅ | Reusing Logic with Custom Hooks | `04-custom-hook` (`useFetch<T>`) |
 
 ---
 
@@ -68,8 +68,8 @@ Some overlap with the path above; check here when an example digs into a specifi
 
 | St | Hook | Example folder |
 |----|------|----------------|
-| ✅ | useState | `01-components` |
-| ✅ | useEffect | `02-use-effect` |
+| ✅ | useState | `02-use-state` (dedicated); also `01-components` |
+| 🟡 | useEffect | `03-use-effect` + `04-custom-hook` (setup/cleanup/deps + fetch guard; no external-store/`useEffectEvent`) |
 | ⬜ | useReducer | |
 | ⬜ | useContext | |
 | ⬜ | useRef | |
@@ -107,7 +107,7 @@ Some overlap with the path above; check here when an example digs into a specifi
 
 ## Notes from what we already learned
 
-- **Data fetching in Effects** (`03-custom-hook` / `useFetch`): React's canonical fix for race conditions is the `let ignore = false` flag; an `AbortController` does the same *and* cancels the request, but its `AbortError` must be ignored on cleanup. React officially recommends TanStack Query / SWR for real apps — hand-rolling is fine for learning. Source: `react.dev/reference/react/useEffect.md`.
+- **Data fetching in Effects** (`04-custom-hook` / `useFetch`): React's canonical fix for race conditions is the `let ignore = false` flag; an `AbortController` does the same *and* cancels the request, but its `AbortError` must be ignored on cleanup. React officially recommends TanStack Query / SWR for real apps — hand-rolling is fine for learning. Source: `react.dev/reference/react/useEffect.md`.
 - **useCallback / useMemo** are *optimizations*, not defaults — React Compiler auto-memoizes. Source: `react.dev/reference/react/useCallback.md`.
 - **Conditional rendering**: prefer `&&` (not `??`) for "show when truthy"; early returns for state machines (loading/error/data). Source: `react.dev/learn/conditional-rendering.md`.
 - **Custom `<button>`** (`01-components`): a native `<button>` defaults to `type="submit"` and will submit a surrounding `<form>` — always set `type="button"` for non-submit buttons. Event-handler props are named `onX`, handler fns `handleX`.
