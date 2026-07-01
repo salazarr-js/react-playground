@@ -6,7 +6,7 @@
 
 ## What this is
 
-A personal React 19 + TypeScript playground. Each demo lives in its own folder under a **collection** and is served as an independent page by a custom Vite MPA plugin. There is no router and no shared app shell — every page is a standalone `main.tsx` entry that mounts its own React root.
+A personal React 19 + TypeScript playground. Each demo lives in its own folder under a **collection** and is served as an independent page by a custom Vite MPA plugin. There is no router; every page is a standalone `main.tsx` entry that mounts its own React root and usually wraps its content in the shared `PageLayout`.
 
 ## Commands (pnpm only)
 
@@ -30,7 +30,7 @@ See [`README.md`](README.md) for the project layout and the per-folder conventio
 
 ### The MPA plugin (`vite-plugin-mpa.ts`)
 
-The load-bearing piece behind discovery, routing, and the build. It synthesizes each page's HTML from the shared `template.html` (no per-folder HTML) and exposes `virtual:mpa-pages` — `collections: { name, pages: { name, path }[] }[]` — consumed by `src/App.tsx` (landing index) and `ExampleFooter` (prev/next nav).
+The load-bearing piece behind discovery, routing, and the build. It synthesizes each page's HTML from the shared `template.html` (no per-folder HTML) and exposes `virtual:mpa-pages` — `collections: { name, pages: { name, path }[] }[]` — consumed by `src/App.tsx` (landing index) and `PageFooter` (prev/next nav).
 
 **Read [`docs/vite-plugin-mpa.md`](docs/vite-plugin-mpa.md) before touching the build, routing, or the plugin** — full design, decisions, options, and Vite 8 / Rolldown constraints.
 
@@ -38,7 +38,15 @@ The load-bearing piece behind discovery, routing, and the build. It synthesizes 
 
 - `@/*` aliases `./src/*` (configured in both `tsconfig.json` and `vite.config.ts`). Use `@/components` etc.
 - `src/components/` is a barrel (`index.ts`). **Default exports must be re-exported explicitly** (`export { default as X } from './X'`) — `export *` does not forward defaults.
-- `ExampleFooter` (prev/next + back-to-index nav) is added per-page by importing it into a page's `main.tsx`, not globally.
+- `PageLayout` wraps a page in the `page-container` column and appends `PageFooter` (prev/next nav); opt in from `main.tsx`, and pass `hideFooter` to drop it (the landing does).
+
+## Styling (Tailwind v4)
+
+Tailwind v4 (`@import 'tailwindcss'` in `src/styles/global.css`), linked globally from `template.html` and `index.html`.
+
+**No arbitrary values** — avoid `[…]` (`max-w-[36rem]`, `p-[13px]`, …); use theme tokens / named utilities (`max-w-xl`, `p-3`) so usage tracks the theme. If a value isn't in the scale, add it to `@theme` in `global.css` and use the generated token.
+
+Shared style primitives are `@utility` rules composed with `@apply` (e.g. `page-container`), so call sites use one class instead of a repeated responsive chain.
 
 ## Authoritative React docs (use these, not memory)
 

@@ -2,12 +2,12 @@ import { createRoot } from "react-dom/client";
 import { StrictMode } from "react";
 
 import App from './App'
-import { ExampleFooter } from '@/components'
+import { PageLayout } from '@/components'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
-
-    <ExampleFooter />
+    <PageLayout>
+      <App />
+    </PageLayout>
   </StrictMode>
 )

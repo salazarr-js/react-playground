@@ -2,7 +2,7 @@ import { collections } from 'virtual:mpa-pages'
 
 export default function App() {
   return (
-    <main>
+    <div>
       <h1>React Playground</h1>
 
       {collections.map(c => (
@@ -23,6 +23,6 @@ export default function App() {
           )}
         </section>
       ))}
-    </main>
+    </div>
   )
 }

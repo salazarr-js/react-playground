@@ -1,1 +1,2 @@
-export { default as ExampleFooter } from './ExampleFooter';
+export { default as PageLayout } from './PageLayout';
+export { default as PageFooter } from './PageFooter';

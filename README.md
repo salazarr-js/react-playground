@@ -1,6 +1,6 @@
 # React Playground
 
-A personal playground for experimenting with **React 19 + TypeScript**. Every demo lives in its own isolated folder and is served as a standalone page — no router, no shared app shell. Two collections: `src/examples/` for atomic concept demos, `src/projects/` for small apps that combine several concepts.
+A personal **React 19 + TypeScript** playground of self-contained demo pages, split into two collections: `src/examples/` (concept demos) and `src/projects/` (small apps combining them).
 
 ## Examples
 
@@ -62,13 +62,13 @@ react-playground/
         App.tsx        ← the demo
         README.md      ← theory + official React docs links
     projects/          ← collection: apps integrating several concepts
-    components/         ← shared UI (e.g. ExampleFooter, imported via @/components)
+    components/         ← shared UI (e.g. PageLayout / PageFooter, imported via @/components)
   template.html        ← shared HTML for all generated pages
   vite-plugin-mpa.ts   ← auto-discovery, routing, build
   vite.config.ts
 ```
 
-A custom Vite plugin (`vite-plugin-mpa.ts`) discovers every folder with a `main.tsx`, serves it as an MPA page, and generates the HTML from the shared `template.html` — no per-folder config. Every page also gets a footer with prev/next navigation within its collection.
+A custom Vite plugin (`vite-plugin-mpa.ts`) discovers every folder with a `main.tsx`, serves it as an MPA page, and generates the HTML from the shared `template.html` — no per-folder config. Pages wrap their content in the shared `PageLayout`, which adds prev/next navigation within the collection (the landing opts out with `hideFooter`).
 
 ### Stack
 
