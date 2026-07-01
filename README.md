@@ -14,11 +14,11 @@ Personal environment for experimenting with React and TypeScript. Each example l
 react-playground/
   src/
     examples/             ← collection: atomic concept demos (cheatsheet)
-      01-use-state/
+      01-components/
         main.tsx          ← entry point (only requirement for discovery)
         App.tsx           ← the demo
         README.md         ← theory + links to the official React docs
-        hooks/            ← any local subfolders the example needs
+        components/       ← any local subfolders the example needs
     projects/             ← collection: apps integrating several concepts
       01-tic-tac-toe/
         main.tsx
@@ -55,7 +55,7 @@ pnpm preview   # preview the build
 | URL | Description |
 |-----|-------------|
 | `localhost:5173/` | Landing — lists all pages grouped by collection |
-| `localhost:5173/examples/01-use-state` | Runs that example |
+| `localhost:5173/examples/01-components` | Runs that example |
 | `localhost:5173/projects/01-tic-tac-toe` | Runs that project |
 
 Every generated page also gets a footer with prev/next navigation within its collection.

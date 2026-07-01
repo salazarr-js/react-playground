@@ -46,13 +46,11 @@ This is a learning playground — examples must match **current React 19** behav
   - `https://react.dev/reference/react/useCallback.md`
   - `https://react.dev/learn/you-might-not-need-an-effect.md`
 
-**Coverage tracker — keep it updated (required workflow):** [`docs/react-docs-coverage.md`](docs/react-docs-coverage.md) maps every React docs page to the example folder that covers it. After creating or modifying ANY example, do this before considering the task done:
+**After creating or modifying ANY example, run the [`document-example`](.claude/skills/document-example/SKILL.md) skill** (or `/document-example <folder>`). It writes the example's `README.md` (all theory + official docs links), keeps the code clean (descriptive comments only — no theory in code), evaluates code improvements, and updates the coverage tracker — inline, so the learning is visible. This is required before considering an example task done.
 
-1. Read the example's code (`App.tsx`, hooks, etc.) and identify which React concepts/APIs it actually demonstrates.
-2. Cross-reference against the official docs pages (use the `.md` twins to confirm scope).
-3. Update `docs/react-docs-coverage.md`: set the status (✅ full / 🟡 partial) and fill in the example folder for every row it covers. Add a one-line entry under "Notes from what we already learned" if the example surfaced a non-obvious lesson.
+**Comment policy:** example code carries only short *descriptive* comments; all explanation/theory lives in the example's `README.md`.
 
-Be honest about 🟡 vs ✅ — only mark ✅ when the example genuinely covers that page's core ideas.
+- Coverage tracker: [`docs/react-docs-coverage.md`](docs/react-docs-coverage.md) maps every React docs page to the example that covers it (✅ full / 🟡 partial). Keep it honest.
 
 Fetch the relevant `.md` and mirror its patterns. Notable current guidance that contradicts older habits: raw `fetch` in an Effect should guard against race conditions (React's `ignore`-flag pattern, or an `AbortController` whose `AbortError` is ignored on cleanup); React Compiler auto-memoizes, so `useCallback`/`useMemo` are optimizations, not defaults.
 

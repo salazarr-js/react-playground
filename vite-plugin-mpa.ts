@@ -54,7 +54,7 @@ function renderExample(
   sitePrefix: string
 ): string {
   const src = `/${dir}/${name}/${entry}` // root-absolute URL Vite understands
-  const title = sitePrefix ? `${sitePrefix} | ${name}` : name // 'React Playground | 01-use-state'
+  const title = sitePrefix ? `${sitePrefix} | ${name}` : name // 'React Playground | 01-components'
   return template
     .replace('__TITLE__', title)
     .replace('__ENTRY__', `<script type="module" src="${src}"></script>`)

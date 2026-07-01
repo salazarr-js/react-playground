@@ -16,11 +16,11 @@ Legend: ✅ done · 🟡 partially touched · ⬜ not yet
 ### 1. Describing the UI
 | St | Docs page | Example folder |
 |----|-----------|----------------|
-| ⬜ | Your First Component | |
-| ⬜ | Importing and Exporting Components | |
+| ✅ | Your First Component | `01-components` |
+| ✅ | Importing and Exporting Components | `01-components` (default export + barrel) |
 | ⬜ | Writing Markup with JSX | |
-| ⬜ | JavaScript in JSX with Curly Braces | |
-| ⬜ | Passing Props to a Component | |
+| 🟡 | JavaScript in JSX with Curly Braces | `01-components` (`{count}` embedding; no attrs/`{{}}`) |
+| ✅ | Passing Props to a Component | `01-components` (`onClick` + `children`) |
 | 🟡 | Conditional Rendering | `03-custom-hook` (touched: `&&`, early return) |
 | ⬜ | Rendering Lists (keys) | |
 | ⬜ | Keeping Components Pure | |
@@ -29,8 +29,8 @@ Legend: ✅ done · 🟡 partially touched · ⬜ not yet
 ### 2. Adding Interactivity
 | St | Docs page | Example folder |
 |----|-----------|----------------|
-| ⬜ | Responding to Events | |
-| ✅ | State: A Component's Memory | `01-use-state` |
+| 🟡 | Responding to Events | `01-components` (handler prop + `on`/`handle` naming; no event object/propagation) |
+| ✅ | State: A Component's Memory | `01-components` (counter + functional update) |
 | ⬜ | Render and Commit | |
 | ⬜ | State as a Snapshot | |
 | ⬜ | Queueing a Series of State Updates | |
@@ -68,7 +68,7 @@ Some overlap with the path above; check here when an example digs into a specifi
 
 | St | Hook | Example folder |
 |----|------|----------------|
-| ✅ | useState | `01-use-state` |
+| ✅ | useState | `01-components` |
 | ✅ | useEffect | `02-use-effect` |
 | ⬜ | useReducer | |
 | ⬜ | useContext | |
@@ -110,3 +110,4 @@ Some overlap with the path above; check here when an example digs into a specifi
 - **Data fetching in Effects** (`03-custom-hook` / `useFetch`): React's canonical fix for race conditions is the `let ignore = false` flag; an `AbortController` does the same *and* cancels the request, but its `AbortError` must be ignored on cleanup. React officially recommends TanStack Query / SWR for real apps — hand-rolling is fine for learning. Source: `react.dev/reference/react/useEffect.md`.
 - **useCallback / useMemo** are *optimizations*, not defaults — React Compiler auto-memoizes. Source: `react.dev/reference/react/useCallback.md`.
 - **Conditional rendering**: prefer `&&` (not `??`) for "show when truthy"; early returns for state machines (loading/error/data). Source: `react.dev/learn/conditional-rendering.md`.
+- **Custom `<button>`** (`01-components`): a native `<button>` defaults to `type="submit"` and will submit a surrounding `<form>` — always set `type="button"` for non-submit buttons. Event-handler props are named `onX`, handler fns `handleX`.
