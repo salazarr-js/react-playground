@@ -1,79 +1,88 @@
 # React Playground
 
-Personal environment for experimenting with React and TypeScript. Each example lives in its own isolated folder under a **collection** (`src/examples/` for atomic concept demos, `src/projects/` for apps that integrate several concepts) and is served as an independent page on the dev server.
+A personal playground for experimenting with **React 19 + TypeScript**. Every demo lives in its own isolated folder and is served as a standalone page — no router, no shared app shell. Two collections: `src/examples/` for atomic concept demos, `src/projects/` for small apps that combine several concepts.
 
-## Stack
+## Examples
 
-- React 19 + TypeScript 6
-- Vite 8
-- oxlint
+Start here. Each example is a self-contained page with a `README.md` covering the theory and links to the official React docs.
 
-## Structure
+### Concept demos — `src/examples/`
 
+| # | Example | What it covers |
+|---|---------|----------------|
+| 01 | [**Components**](./src/examples/01-components/README.md) | JSX, props, composition |
+| 02 | [**useState**](./src/examples/02-use-state/README.md) | Local state, re-renders |
+| 03 | [**useEffect**](./src/examples/03-use-effect/README.md) | Side effects, cleanup, race conditions |
+| 04 | [**Custom Hook** (`useFetch`)](./src/examples/04-custom-hook/README.md) | Extracting reusable stateful logic |
+
+### Projects — `src/projects/`
+
+Apps that integrate several concepts. _(None yet — coming soon.)_
+
+## Quick start
+
+```bash
+pnpm install
+pnpm dev        # dev server at localhost:5173 — auto-discovers pages, HMR
 ```
-react-playground/
-  src/
-    examples/             ← collection: atomic concept demos (cheatsheet)
-      01-components/
-        main.tsx          ← entry point (only requirement for discovery)
-        App.tsx           ← the demo
-        README.md         ← theory + links to the official React docs
-        components/       ← any local subfolders the example needs
-    projects/             ← collection: apps integrating several concepts
-      01-tic-tac-toe/
-        main.tsx
-        App.tsx
-    components/           ← shared UI (e.g. ExampleFooter, imported via `@/components`)
-  template.html           ← shared HTML for all generated pages
-  vite-plugin-mpa.ts
-  vite.config.ts
+
+| URL | Description |
+|-----|-------------|
+| `localhost:5173/` | Landing — every page grouped by collection |
+| `localhost:5173/examples/01-components` | Runs that example |
+
+Other commands:
+
+```bash
+pnpm build      # typecheck + production build
+pnpm typecheck  # TypeScript only
+pnpm lint       # oxlint
+pnpm preview    # preview the build
 ```
 
 ## Adding an example
 
-Create a folder under a collection (`src/examples/` or `src/projects/`) named `NN-kebab-name` (the zero-padded prefix drives sort order). Per folder:
+Create a folder under a collection named `NN-kebab-name` (the zero-padded prefix drives sort order). Per folder:
 
 - **`main.tsx`** — entry that mounts `<App />` (the only requirement for discovery).
 - **`App.tsx`** — the demo.
-- **`README.md`** — the theory behind the example, with links to the official React docs page(s) it covers plus any other useful resources.
+- **`README.md`** — the theory, with links to the official React docs page(s) it covers.
 - Any local subfolders the example needs (`hooks/`, `components/`, …).
 
-It shows up automatically — the dev server hot-reloads the page set, no restart and no config files to touch. The example appears at `/examples/NN-kebab-name` and in the index at `/` under its collection.
+It shows up automatically — the dev server hot-reloads the page set, no restart and no config to touch. The page appears at `/<collection>/NN-kebab-name` and in the landing index.
 
-## Commands
+## How it works
 
-```bash
-pnpm dev       # dev server at localhost:5173
-pnpm build     # typecheck + production build
-pnpm typecheck # TypeScript only
-pnpm lint      # oxlint
-pnpm preview   # preview the build
+```
+react-playground/
+  src/
+    examples/          ← collection: atomic concept demos
+      01-components/
+        main.tsx       ← entry point (only requirement for discovery)
+        App.tsx        ← the demo
+        README.md      ← theory + official React docs links
+    projects/          ← collection: apps integrating several concepts
+    components/         ← shared UI (e.g. ExampleFooter, imported via @/components)
+  template.html        ← shared HTML for all generated pages
+  vite-plugin-mpa.ts   ← auto-discovery, routing, build
+  vite.config.ts
 ```
 
-## Dev server
+A custom Vite plugin (`vite-plugin-mpa.ts`) discovers every folder with a `main.tsx`, serves it as an MPA page, and generates the HTML from the shared `template.html` — no per-folder config. Every page also gets a footer with prev/next navigation within its collection.
 
-| URL | Description |
-|-----|-------------|
-| `localhost:5173/` | Landing — lists all pages grouped by collection |
-| `localhost:5173/examples/01-components` | Runs that example |
-| `localhost:5173/projects/01-tic-tac-toe` | Runs that project |
+### Stack
 
-Every generated page also gets a footer with prev/next navigation within its collection.
+React 19 · TypeScript 6 · Vite 8 · oxlint
 
-## vite-plugin-mpa
-
-Custom Vite plugin that auto-discovers examples across collections and serves them as an MPA with no per-folder config required. Technical docs (design, decisions, inspiration) at [docs/vite-plugin-mpa.md](./docs/vite-plugin-mpa.md).
-
-## Docs
+## Reference docs
 
 - [React docs coverage](./docs/react-docs-coverage.md) — tracker mapping each example to the React docs pages it covers.
 - [vite-plugin-mpa](./docs/vite-plugin-mpa.md) — how the MPA plugin is built and why.
 - [Free test APIs](./docs/free-test-apis.md) — quick reference for free mock APIs (JSONPlaceholder, DummyJSON).
 - [UI research](./docs/ui-research.md) — styling options research (class-based Tailwind layers).
 
-## Learning resources
+## Resources
 
-Curated React learning path — tools, courses, and references. Brought over from [salazarr-js/react-path](https://github.com/salazarr-js/react-path) (the "learning path / timeline" that inspired this playground's `projects/`).
 
 ### Tools / Services
 
