@@ -15,11 +15,10 @@ react-playground/
   src/
     examples/             ← collection: atomic concept demos (cheatsheet)
       01-use-state/
-        main.tsx          ← entry point (only requirement)
-        App.tsx
-      02-use-effect/
-        main.tsx
-        App.tsx
+        main.tsx          ← entry point (only requirement for discovery)
+        App.tsx           ← the demo
+        README.md         ← theory + links to the official React docs
+        hooks/            ← any local subfolders the example needs
     projects/             ← collection: apps integrating several concepts
       01-tic-tac-toe/
         main.tsx
@@ -32,16 +31,14 @@ react-playground/
 
 ## Adding an example
 
-Create a folder under a collection (`src/examples/` or `src/projects/`) with the format `NN-kebab-name` and a `main.tsx` inside:
+Create a folder under a collection (`src/examples/` or `src/projects/`) named `NN-kebab-name` (the zero-padded prefix drives sort order). Per folder:
 
-```
-src/examples/
-  03-use-ref/
-    main.tsx
-    App.tsx
-```
+- **`main.tsx`** — entry that mounts `<App />` (the only requirement for discovery).
+- **`App.tsx`** — the demo.
+- **`README.md`** — the theory behind the example, with links to the official React docs page(s) it covers plus any other useful resources.
+- Any local subfolders the example needs (`hooks/`, `components/`, …).
 
-It shows up automatically — the dev server hot-reloads the page set, no restart and no config files to touch. The example appears at `/examples/03-use-ref` and in the index at `/` under its collection.
+It shows up automatically — the dev server hot-reloads the page set, no restart and no config files to touch. The example appears at `/examples/NN-kebab-name` and in the index at `/` under its collection.
 
 ## Commands
 
@@ -65,7 +62,14 @@ Every generated page also gets a footer with prev/next navigation within its col
 
 ## vite-plugin-mpa
 
-Custom Vite plugin that auto-discovers examples across collections and serves them as an MPA with no per-folder config required. Docs at [`docs/vite-plugin-mpa.md`](docs/vite-plugin-mpa.md).
+Custom Vite plugin that auto-discovers examples across collections and serves them as an MPA with no per-folder config required. Technical docs (design, decisions, inspiration) at [docs/vite-plugin-mpa.md](./docs/vite-plugin-mpa.md).
+
+## Docs
+
+- [React docs coverage](./docs/react-docs-coverage.md) — tracker mapping each example to the React docs pages it covers.
+- [vite-plugin-mpa](./docs/vite-plugin-mpa.md) — how the MPA plugin is built and why.
+- [Free test APIs](./docs/free-test-apis.md) — quick reference for free mock APIs (JSONPlaceholder, DummyJSON).
+- [UI research](./docs/ui-research.md) — styling options research (class-based Tailwind layers).
 
 ## Learning resources
 

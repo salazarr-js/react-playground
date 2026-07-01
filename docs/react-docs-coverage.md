@@ -1,0 +1,112 @@
+# React Docs Coverage
+
+Tracker to make sure the playground eventually covers the **entire** React documentation, no matter what order the examples are actually built in (e.g. following a video tutorial).
+
+**How to use:** build examples in whatever order you like. Each time an example covers a docs page, fill in its folder under "Example" and tick the box. The goal is every row checked.
+
+- Official index: <https://react.dev/llms.txt>
+- Any page → clean markdown: append `.md` (e.g. `https://react.dev/learn/rendering-lists.md`)
+
+Legend: ✅ done · 🟡 partially touched · ⬜ not yet
+
+---
+
+## Learn React — the official learning path
+
+### 1. Describing the UI
+| St | Docs page | Example folder |
+|----|-----------|----------------|
+| ⬜ | Your First Component | |
+| ⬜ | Importing and Exporting Components | |
+| ⬜ | Writing Markup with JSX | |
+| ⬜ | JavaScript in JSX with Curly Braces | |
+| ⬜ | Passing Props to a Component | |
+| 🟡 | Conditional Rendering | `03-custom-hook` (touched: `&&`, early return) |
+| ⬜ | Rendering Lists (keys) | |
+| ⬜ | Keeping Components Pure | |
+| ⬜ | Your UI as a Tree | |
+
+### 2. Adding Interactivity
+| St | Docs page | Example folder |
+|----|-----------|----------------|
+| ⬜ | Responding to Events | |
+| ✅ | State: A Component's Memory | `01-use-state` |
+| ⬜ | Render and Commit | |
+| ⬜ | State as a Snapshot | |
+| ⬜ | Queueing a Series of State Updates | |
+| ⬜ | Updating Objects in State | |
+| ⬜ | Updating Arrays in State | |
+
+### 3. Managing State
+| St | Docs page | Example folder |
+|----|-----------|----------------|
+| ⬜ | Reacting to Input with State | |
+| ⬜ | Choosing the State Structure | |
+| ⬜ | Sharing State Between Components (lifting up) | |
+| ⬜ | Preserving and Resetting State | |
+| ⬜ | Extracting State Logic into a Reducer (useReducer) | |
+| ⬜ | Passing Data Deeply with Context (useContext) | |
+| ⬜ | Scaling Up with Reducer and Context | |
+
+### 4. Escape Hatches
+| St | Docs page | Example folder |
+|----|-----------|----------------|
+| ⬜ | Referencing Values with Refs (useRef) | |
+| ⬜ | Manipulating the DOM with Refs | |
+| ✅ | Synchronizing with Effects (useEffect) | `02-use-effect` |
+| 🟡 | You Might Not Need an Effect | `03-custom-hook` (discussed; no dedicated demo) |
+| ⬜ | Lifecycle of Reactive Effects | |
+| ⬜ | Separating Events from Effects (useEffectEvent) | |
+| ⬜ | Removing Effect Dependencies | |
+| ✅ | Reusing Logic with Custom Hooks | `03-custom-hook` |
+
+---
+
+## API Reference — Hooks
+
+Some overlap with the path above; check here when an example digs into a specific hook's API.
+
+| St | Hook | Example folder |
+|----|------|----------------|
+| ✅ | useState | `01-use-state` |
+| ✅ | useEffect | `02-use-effect` |
+| ⬜ | useReducer | |
+| ⬜ | useContext | |
+| ⬜ | useRef | |
+| ⬜ | useMemo | |
+| ⬜ | useCallback | |
+| ⬜ | useTransition | |
+| ⬜ | useDeferredValue | |
+| ⬜ | useId | |
+| ⬜ | useImperativeHandle | |
+| ⬜ | useLayoutEffect | |
+| ⬜ | useDebugValue | |
+| ⬜ | useSyncExternalStore | |
+| ⬜ | useEffectEvent | |
+| ⬜ | useInsertionEffect | |
+| ⬜ | use (read promise/context) | |
+| ⬜ | useActionState (forms + Actions) | |
+| ⬜ | useOptimistic | |
+
+---
+
+## API Reference — Components & APIs
+
+| St | Topic | Example folder |
+|----|-------|----------------|
+| ⬜ | `<Suspense>` (data fetching boundary) | |
+| ⬜ | `<Fragment>` / `<>` | |
+| ⬜ | `<StrictMode>` | every `main.tsx` uses it (not a focus yet) |
+| ⬜ | `memo` | |
+| ⬜ | `lazy` (code splitting) | |
+| ⬜ | `createPortal` | |
+| ⬜ | `forwardRef` (legacy in 19 — ref as prop) | |
+| ⬜ | Forms & Actions (`<form action>`, `useFormStatus`) | |
+
+---
+
+## Notes from what we already learned
+
+- **Data fetching in Effects** (`03-custom-hook` / `useFetch`): React's canonical fix for race conditions is the `let ignore = false` flag; an `AbortController` does the same *and* cancels the request, but its `AbortError` must be ignored on cleanup. React officially recommends TanStack Query / SWR for real apps — hand-rolling is fine for learning. Source: `react.dev/reference/react/useEffect.md`.
+- **useCallback / useMemo** are *optimizations*, not defaults — React Compiler auto-memoizes. Source: `react.dev/reference/react/useCallback.md`.
+- **Conditional rendering**: prefer `&&` (not `??`) for "show when truthy"; early returns for state machines (loading/error/data). Source: `react.dev/learn/conditional-rendering.md`.
