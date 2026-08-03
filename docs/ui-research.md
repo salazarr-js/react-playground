@@ -35,6 +35,23 @@ ask here.
 - **Skeleton** — if we want a more structured theme/token system.
 - **Franken UI** — if we like the shadcn look but want no React dependency.
 
+## Classless / minimal (the direction we took)
+
+Rather than adopt a plugin's class vocabulary, we lifted the **token + base-element**
+ideas from these projects and rolled our own thin layer on Tailwind (see _Next step_).
+For the detailed token comparison and the schema we landed on, see
+[`design-tokens.md`](./design-tokens.md).
+
+| Project | Repo | Why it's here |
+|---|---|---|
+| **Pico** | https://github.com/picocss/pico | **Classless** — styles bare `h1`/`p`/`a`/`button`/form tags via CSS variables. The main inspiration; adds a few opt-in classes only when needed. |
+| **water.css** | https://github.com/kognise/water.css | Pure **classless** drop-in — no classes at all, just nice defaults on bare elements. |
+| **daisyUI** | https://github.com/saadeghi/daisyui | Tailwind plugin — borrowed its semantic-token / theme-variable naming. |
+| **Skeleton** | https://github.com/skeletonlabs/skeleton | Tailwind design-token system — borrowed its structured token approach. |
+| **Pure CSS** | https://github.com/pure-css/pure | Yahoo's ultra-light (~3.5 kB) modular framework — reference for staying tiny and splitting into opt-in modules (base/forms/tables). |
+| **Skeleton (classic)** | https://github.com/dhg/Skeleton · http://getskeleton.com | The original minimal boilerplate — styles bare typography/forms/buttons like a classless framework; "just a starting point, not a framework" spirit. |
+| **Ripple UI** | https://github.com/Siumauricio/rippleui | daisyUI-style Tailwind plugin — second reference for plugin packaging and component-class naming. |
+
 ---
 
 ## Fuller landscape (for reference)
@@ -67,10 +84,18 @@ UnoCSS (atomic, faster, Tailwind-compatible presets) · Master CSS · Open Props
 
 ---
 
-## Next step (proposed)
+## Decision — stay classless (no plugin)
 
-Add Tailwind + **daisyUI** to the playground and create a new example
-(e.g. `src/examples/03-daisyui/main.tsx`) using the existing
-[`vite-plugin-mpa`](./vite-plugin-mpa.md) — it shows up at `/examples/03-daisyui`
-and on `/` with no extra config. Swap daisyUI for Skeleton/Franken UI later if we
-want to compare.
+We already have Tailwind. Instead of installing daisyUI/Skeleton, we keep the playground
+**classless, Pico-inspired**: our own small set of **semantic tokens + base element
+styles** live in [`src/styles/global.css`](../src/styles/global.css), so bare `h1`–`h6`,
+`p`, `a` and `button` look good by default with **no classes and no framework**.
+
+- **Tokens** are two-tier: runtime `:root` vars (the theme, currently slate + indigo) →
+  `@theme inline` semantic tokens → live Tailwind utilities (`bg-primary`, `text-fg`, …).
+  Re-skinning = edit the `:root` vars; dark mode = one `@media` override block.
+- **Living reference:** the [`ui-styleguide`](../src/projects/ui-styleguide/) page
+  (`/projects/ui-styleguide`) renders every styled bare element on one screen.
+- **Next elements:** forms (`input`/`label`/`select`/`textarea`), then optional Pico-style
+  opt-in variant classes. A plugin (daisyUI/Skeleton) stays an option if we ever want a
+  full class vocabulary.

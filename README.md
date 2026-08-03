@@ -17,7 +17,11 @@ Start here. Each example is a self-contained page with a `README.md` covering th
 
 ### Projects — `src/projects/`
 
-Apps that integrate several concepts. _(None yet — coming soon.)_
+Apps and references that integrate several concepts.
+
+| Project | What it is |
+|---------|------------|
+| [**UI Styleguide**](./src/projects/ui-styleguide/README.md) | Living reference for the classless base element styles (tokens in `src/styles/global.css`) |
 
 ## Quick start
 
@@ -79,7 +83,8 @@ React 19 · TypeScript 6 · Vite 8 · oxlint
 - [React docs coverage](./docs/react-docs-coverage.md) — tracker mapping each example to the React docs pages it covers.
 - [vite-plugin-mpa](./docs/vite-plugin-mpa.md) — how the MPA plugin is built and why.
 - [Free test APIs](./docs/free-test-apis.md) — quick reference for free mock APIs (JSONPlaceholder, DummyJSON).
-- [UI research](./docs/ui-research.md) — styling options research (class-based Tailwind layers).
+- [UI research](./docs/ui-research.md) — styling research + the classless base-styles decision.
+- [Design tokens](./docs/design-tokens.md) — token comparison (Pico / daisyUI / Skeleton) + our schema.
 
 ## Resources
 

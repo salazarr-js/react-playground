@@ -2,8 +2,205 @@
 
 @theme {
   --breakpoint-xs: 30rem; /* 480px */
+
+  /* Control roundness — one knob shared by button/input/select/textarea (rounded-field). */
+  --radius-field: var(--radius-md);
+}
+
+/* Semantic color utilities (bg-bg, text-fg, bg-primary, …) kept live via `inline`
+   so they resolve to the runtime :root vars below — override those to re-theme. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-contrast: var(--primary-contrast);
+  --color-ring: var(--ring);
+
+  --color-success: var(--success);
+  --color-success-contrast: var(--success-contrast);
+  --color-error: var(--error);
+  --color-error-contrast: var(--error-contrast);
+
+  --color-code-bg: var(--code-bg);
 }
 
 @utility page-container {
   @apply mx-auto w-full px-4 sm:px-0 sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-6xl 2xl:max-w-7xl;
+}
+
+@layer base {
+  /* The theme: the single source of color values. Swap these to re-skin the whole
+     playground. Dark mode (deferred): wrap each value in `light-dark(<light>, <dark>)`
+     and set `color-scheme: light dark` here — no element rule or @theme change needed.
+     See docs/design-tokens.md. */
+  :root {
+    --bg: var(--color-white);
+    --surface: var(--color-white);
+    --fg: var(--color-slate-900);
+    --muted: var(--color-slate-500);
+    --border: var(--color-slate-200);
+    --primary: var(--color-indigo-600);
+    --primary-hover: var(--color-indigo-700);
+    --primary-contrast: var(--color-white);
+    --ring: var(--color-indigo-500);
+
+    /* Status — only what bare elements consume today (form validation). */
+    --success: var(--color-emerald-600);
+    --success-contrast: var(--color-white);
+    --error: var(--color-red-600);
+    --error-contrast: var(--color-white);
+
+    /* Surface tint for code / pre / kbd. */
+    --code-bg: var(--color-slate-100);
+  }
+
+  body {
+    @apply bg-bg text-fg leading-relaxed antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-fg text-balance;
+  }
+  h1 { @apply mb-4 text-4xl; }
+  h2 { @apply mt-8 mb-3 text-3xl; }
+  h3 { @apply mt-6 mb-2 text-2xl; }
+  h4 { @apply mt-4 mb-2 text-xl; }
+  h5 { @apply text-lg; }
+  h6 { @apply text-base; }
+
+  p {
+    @apply mb-4;
+  }
+
+  a {
+    @apply text-primary underline underline-offset-2 transition-colors;
+  }
+  a:hover {
+    @apply text-primary-hover;
+  }
+
+  button {
+    @apply inline-flex cursor-pointer items-center justify-center rounded-field bg-primary px-4 py-2 font-medium text-primary-contrast transition-colors;
+  }
+  button:hover {
+    @apply bg-primary-hover;
+  }
+  button:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2;
+  }
+  button:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  label {
+    @apply mb-1 inline-block font-medium;
+  }
+
+  /* Text-like fields only — checkbox/radio/range/file/color keep native rendering. */
+  :where(
+    input:not(
+      [type='checkbox'], [type='radio'], [type='range'], [type='file'],
+      [type='color'], [type='button'], [type='submit'], [type='reset'], [type='image']
+    )
+  ),
+  select,
+  textarea {
+    --field-border: var(--color-border);
+    @apply w-full rounded-field border bg-surface px-3 py-2 text-fg transition-colors;
+    border-color: var(--field-border);
+  }
+  ::placeholder {
+    @apply text-muted;
+  }
+
+  /* Each state only re-points the role var; the base rule repaints border-color from it. */
+  :where(input, select, textarea):focus-visible {
+    --field-border: var(--color-ring);
+    @apply outline-none ring-2 ring-ring ring-offset-1;
+  }
+  :where(input, select, textarea)[aria-invalid='true'] {
+    --field-border: var(--color-error);
+  }
+  :where(input, select, textarea)[aria-invalid='true']:focus-visible {
+    @apply ring-error;
+  }
+  :where(input, select, textarea)[aria-invalid='false'] {
+    --field-border: var(--color-success);
+  }
+  :where(input, select, textarea)[aria-invalid='false']:focus-visible {
+    @apply ring-success;
+  }
+  :where(input, select, textarea):disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  input[type='checkbox'],
+  input[type='radio'],
+  input[type='range'] {
+    accent-color: var(--color-primary);
+  }
+
+  ul,
+  ol {
+    @apply mb-4 ps-6;
+  }
+  ul {
+    @apply list-disc;
+  }
+  ol {
+    @apply list-decimal;
+  }
+  li {
+    @apply mb-1;
+  }
+  /* Nested lists tighten up. */
+  :where(ul, ol) :where(ul, ol) {
+    @apply mt-1 mb-0;
+  }
+
+  details {
+    @apply mb-4 rounded-field border border-border px-4 py-2;
+  }
+  summary {
+    @apply cursor-pointer font-medium;
+  }
+  details[open] summary {
+    @apply mb-2;
+  }
+
+  blockquote {
+    @apply mb-4 border-s-4 border-border ps-4 text-muted italic;
+  }
+
+  hr {
+    @apply my-8 border-t border-border;
+  }
+
+  code,
+  kbd,
+  samp {
+    @apply rounded bg-code-bg px-1 py-0.5 font-mono text-sm;
+  }
+  pre {
+    @apply mb-4 overflow-x-auto rounded-field bg-code-bg p-4 font-mono text-sm;
+  }
+  /* A code block already sits on `pre`; don't double the chip styling. */
+  pre code {
+    @apply bg-transparent p-0 text-inherit;
+  }
+
+  table {
+    @apply mb-4 w-full border-collapse text-left;
+  }
+  th,
+  td {
+    @apply border-b border-border px-3 py-2;
+  }
+  th {
+    @apply font-semibold;
+  }
 }
